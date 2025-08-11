@@ -1,106 +1,213 @@
-# Bunkr Downloader
+# Bunkr Album Downloader with AI Frame Extraction
 
-> A Python Bunkr downloader that fetches images and videos from URLs. It supports both Bunkr albums and individual file URLs, logs issues, and enables concurrent downloads for efficiency.
+> An intelligent Python downloader for Bunkr albums that can extract high-quality frames from videos for AI training datasets. Features interactive configuration and automated album discovery.
 
 ![Screenshot](https://github.com/Lysagxra/BunkrDownloader/blob/3bc786d91f2950fbc1df120b7ebbb6ff90e4e6fd/misc/DemoV2.gif)
 
 ## Features
 
-- Downloads multiple files from an album concurrently.
-- Supports [batch downloading](https://github.com/Lysagxra/BunkrDownloader?tab=readme-ov-file#batch-download) via a list of URLs.
-- Supports [selective files downloading](https://github.com/Lysagxra/BunkrDownloader/tree/main?tab=readme-ov-file#selective-download) based on filename criteria.
-- Provides [minimal UI](https://github.com/Lysagxra/BunkrDownloader/tree/main?tab=readme-ov-file#disable-ui-for-notebooks) for notebook environments.
-- Provides progress indication during downloads.
-- Automatically creates a directory structure for organized storage.
-- Logs URLs that encounter errors for troubleshooting.
+- 🔍 **Automatic Album Discovery**: Search and find albums automatically
+- 🎬 **Smart Video Processing**: Extract frames from videos for AI training instead of downloading large video files
+- 📥 **Concurrent Downloads**: Download multiple files efficiently with progress tracking
+- 🎯 **Interactive Configuration**: User-friendly setup without complex command-line arguments
+- 📁 **Organized Storage**: Automatic directory structure and file organization
+- 🛡️ **Robust Error Handling**: Retry mechanisms and offline server detection
+- 📝 **Comprehensive Logging**: Track downloads and errors for troubleshooting
+
+## Quick Start
+
+1. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Install FFmpeg** (required for video frame extraction):
+   - Windows: Download from https://ffmpeg.org/download.html
+   - Linux: `sudo apt install ffmpeg`
+   - macOS: `brew install ffmpeg`
+
+3. **Run the downloader**:
+   ```bash
+   python run.py
+   ```
+   or directly:
+   ```bash
+   python interactive_downloader.py
+   ```
+
+4. **Follow the prompts** to configure your download preferences
+
+## Usage Modes
+
+### Interactive Mode (Recommended)
+The script will ask you simple questions:
+- Do you want to download videos or extract frames?
+- Search for specific content or browse defaults?
+- How many albums to process?
+- Any file filtering preferences?
+
+### Traditional Batch Mode
+Put album URLs in `URLs.txt` (one per line) and run:
+```bash
+python main.py
+```
+
+### Single Album Download
+```bash
+python downloader.py https://bunkr.cr/a/ALBUM_ID
+```
+
+## Video Frame Extraction
+
+When frame extraction mode is enabled:
+- Videos are automatically detected by file extension
+- High-quality frames are extracted using intelligent selection:
+  - Sharpness analysis (Laplacian variance)
+  - Brightness filtering
+  - Perceptual hashing for diversity
+- Frames are saved as JPEGs in organized subfolders
+- Original videos are NOT downloaded (saves massive disk space)
+
+### Frame Selection Logic
+- **≤30s videos**: 10 frames
+- **30-60s videos**: 10-12 frames  
+- **60-300s videos**: 12-20 frames
+- **300-600s videos**: 20-30 frames
+- **>600s videos**: 30-60 frames (capped)
 
 ## Dependencies
 
-- Python 3
-- `BeautifulSoup` (bs4) - for HTML parsing
-- `requests` - for HTTP requests
-- `rich` - for progress display in the terminal
+### Core Dependencies
+- **Python 3.10+** - Required
+- `requests` - HTTP requests and web scraping
+- `beautifulsoup4` - HTML parsing
+- `lxml` - Fast XML/HTML parsing
+- `rich` - Beautiful progress bars and UI
 
-## Directory Structure
+### Video Frame Extraction
+- `numpy` - Numerical computing for image analysis
+- `Pillow` - Image processing and manipulation
+- `scipy` - Scientific computing for advanced algorithms
+- **FFmpeg/FFprobe** - Video processing (system dependency)
+
+## Project Structure
 
 ```
-project-root/
-├── helpers/
-│ ├── crawlers/
-│ │ └── crawler_utils.py     # Utilities for extracting media download links
-│ ├── downloaders/
-│ │ ├── album_downloader.py  # Manages the downloading of entire albums
-│ │ ├── download_utils.py    # Utilities for managing the download process
-│ │ └── media_downloader.py  # Manages the downloading of individual media files
-│ ├── managers/
-│ │ ├── live_manager.py      # Manages a real-time live display
-│ │ ├── log_manager.py       # Manages real-time log updates
-│ │ └── progress_manager.py  # Manages progress bars
-│ ├── bunkr_utils.py         # Utilities for checking Bunkr status
-│ ├── config.py              # Manages constants and settings used across the project
-│ ├── file_utils.py          # Utilities for managing file operations
-│ ├── general_utils.py       # Miscellaneous utility functions
-│ └── url_utils.py           # Utilities for Bunkr URLs
-├── downloader.py            # Module for initiating downloads from specified Bunkr URLs
-├── main.py                  # Main script to run the downloader
-├── URLs.txt                 # Text file listing album URLs to be downloaded
-└── session_log.txt          # Log file for recording session details
+BunkrDownloader/
+├── run.py                     # 🚀 Simple launcher script
+├── interactive_downloader.py  # 🎯 Main interactive downloader
+├── downloader.py              # Single album downloader
+├── main.py                    # Batch downloader (URLs.txt)
+├── requirements.txt           # Python dependencies
+├── Downloads/                 # Output directory (auto-created)
+│   ├── Album Name (ID)/      # Individual albums
+│   │   ├── image1.jpg        # Images and files
+│   │   └── video_name_frames/ # Video frame folders
+│   │       ├── frame_001.jpg
+│   │       └── frame_002.jpg
+├── helpers/                   # Core functionality
+│   ├── video/                # 🎬 Video frame extraction
+│   │   ├── frame_extractor.py
+│   │   └── video_utils.py
+│   ├── downloaders/          # 📥 Download management
+│   ├── managers/             # 📊 Progress and logging
+│   ├── crawlers/             # 🕷️ Page parsing
+│   └── ... (other utilities)
+├── URLs.txt                  # Batch input file (auto-created)
+└── session_log.txt          # Error logging (auto-created)
 ```
 
-## Installation
+## Examples
 
-1. Clone the repository:
-
+### Creating an AI Training Dataset
 ```bash
-git clone https://github.com/Lysagxra/BunkrDownloader.git
+python interactive_downloader.py
 ```
+Then follow the prompts:
+- Choose "Extract frames from videos"
+- Search for "nature photography"
+- Process 20 albums
+- Include only: "4k, hd, nature"
+- Ignore: "watermark, preview"
 
-2. Navigate to the project directory:
-
+### Downloading Photo Collections
 ```bash
-cd BunkrDownloader
+python interactive_downloader.py
+```
+- Choose "Download videos normally" 
+- Search for "street photography"
+- Process 10 albums
+
+### Batch Processing from File
+Create `URLs.txt` with album URLs (one per line):
+```
+https://bunkr.cr/a/ABC123
+https://bunkr.cr/a/DEF456
+https://bunkr.cr/a/GHI789
 ```
 
-3. Install the required dependencies:
-
+Then run:
 ```bash
-pip install -r requirements.txt
+python main.py
 ```
 
-## Single Download
-
-To download a single media from an URL, you can use `downloader.py`, running the script with a valid album or media URL.
-
-### Usage
-
+### Single Album Download
 ```bash
-python3 downloader.py <bunkr_url>
+python downloader.py https://bunkr.cr/a/ALBUM_ID
 ```
 
-### Examples
-
-You can either download an entire album or a specific file:
+## Output Structure
 
 ```
-python3 downloader.py https://bunkr.si/a/PUK068QE       # Download album
-python3 downloader.py https://bunkr.fi/f/gBrv5f8tAGlGW  # Download single media
+Downloads/
+├── Nature Photos (ABC123)/
+│   ├── photo1.jpg
+│   ├── photo2.png
+│   └── video_sunset_frames/
+│       ├── frame_001_t1500ms.jpg
+│       ├── frame_002_t3200ms.jpg
+│       └── frame_003_t4800ms.jpg
+└── Street Photography (DEF456)/
+    ├── street1.jpg
+    └── street2.jpg
 ```
 
-## Selective Download
+## Configuration Options
 
-The script supports selective file downloads from an album, allowing you to exclude files using the [Ignore List](https://github.com/Lysagxra/BunkrDownloader?tab=readme-ov-file#ignore-list) and include specific files with the [Include List](https://github.com/Lysagxra/BunkrDownloader?tab=readme-ov-file#include-list).
+The interactive script will ask you about:
 
-## Ignore List
+- **Video Handling**: Download normally or extract frames
+- **Content Discovery**: Search with terms or browse from URLs.txt
+- **Album Count**: How many albums to process (1-100)
+- **File Filtering**: Include/exclude patterns (optional)
 
-The Ignore List is specified using the `--ignore` argument in the command line. This allows you to skip the download of any file from an album if its filename contains at least one of the specified strings in the list. Item in the list should be separated by a space.
+All video frame extraction parameters are optimized and hardcoded for best results.
 
-### Usage
+## Troubleshooting
 
-```bash
-python3 downloader.py <bunkr_album_url> --ignore <ignore_list>
-```
+### Common Issues
 
-### Example
+1. **"ffmpeg not found"**: Install FFmpeg and add to PATH
+2. **Import errors**: Run `pip install -r requirements.txt`
+3. **No albums found**: Try different search terms or check network
+4. **Download failures**: Check `session_log.txt` for details
+
+### Performance Tips
+
+- Use frame extraction mode for video-heavy content to save disk space
+- Adjust concurrent workers in `helpers/config.py` if needed
+- Use file filtering to avoid unwanted downloads
+
+## Legal Notice
+
+- Respect the website's terms of service and robots.txt
+- Only download content you have permission to use
+- Be mindful of bandwidth and server load
+- This tool is for educational and personal use only
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
 
 This feature is particularly useful when you want to skip files with certain extensions, such as `.zip` files. For instance:
 
